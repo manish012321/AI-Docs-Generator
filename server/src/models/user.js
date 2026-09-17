@@ -13,7 +13,9 @@ const userSchema = new mongoose.Schema
     },
     password : {
         type : String,
-        required : true
+        requires : function(){
+            return this.authProvider === "Local"
+        }
     },
     workspaceId : {
         type : mongoose.Schema.Types.ObjectId,
@@ -24,6 +26,14 @@ const userSchema = new mongoose.Schema
         enum : ["owner","editor","viewer"],
         default : "viewer"
     },
+    authProvider : {
+        type : String,
+        enum : ["Local","Google"],
+        default : "Local"
+    },
+    avatar : {
+        type : String,
+    }
     
 },{timestamps : true})
 const User = mongoose.model("user",userSchema);

@@ -27,7 +27,7 @@ const toggleTheme = () => {
     { name: "Dashboard", href: "/dashboard" },
     { name: "Templates", href: "/templates" },
     { name: "Contact", href: "/contact" },
-    { name: "SOPs", href: "/sops" },
+    { name: "Docs", href: "/sops" },
     { name: "How it Works", href: "/how-it-works" },
 
   ];
@@ -55,7 +55,7 @@ const toggleTheme = () => {
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-gray-800 dark:text-white">
-            SOP <span className="text-purple-600">Generator</span>
+            AI Docs <span className="text-purple-600">Generator</span>
           </h1>
         </div>
 
@@ -112,7 +112,7 @@ const toggleTheme = () => {
         <div className="hidden md:block">
 
           <button className="bg-purple-600 hover:bg-purple-700 hover:scale-105 active:scale-95 transition-all duration-300 text-white px-6 py-2.5 rounded-2xl font-semibold shadow-md">
-            Generate SOP
+            Generate DOC
           </button>
         </div>
 
@@ -140,7 +140,7 @@ const toggleTheme = () => {
             ))}
 
             <button className="mt-3 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-semibold transition">
-              Generate SOP
+              Generate DOC
             </button>
           </nav>
         </div>

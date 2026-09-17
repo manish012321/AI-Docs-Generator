@@ -5,6 +5,7 @@ import api from "../api/axios.js";
 import { useNavigate, Link } from "react-router-dom";
 import useAuthStore from "../store/authStore.js";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useGoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +16,25 @@ const Login = () => {
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
+ 
+const googleLogin = useGoogleLogin({
+    onSuccess: async (response) => {
+        try {
+            const res = await api.post('/auth/google-login', {
+                accessToken: response.access_token
+            });
+            login(res.data.user, res.data.token);
+            toast.success("Welcome!", { autoClose: 2000 });
+            navigate('/dashboard');
+        } catch (err) {
+            setError(err.response?.data?.message || "Google login failed");
+        }
+    },
+    onError: (error) => {
+        console.error('Google login error:', error);
+        setError("Google login failed");
+    }
+});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,14 +125,16 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-2xl font-semibold text-white transition-all duration-300 ${
-                loading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02]"
-              }`}
+              className={`w-full py-3 rounded-2xl font-semibold text-white transition-all duration-300 ${loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02]"
+                }`}
             >
               {loading ? "Logging in..." : "Login"}
             </button>
+
+            <button onClick={() => googleLogin()} type="button" className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white font-medium shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-md hover:border-gray-400 active:scale-[0.98]" > <img src="/google-icon-logo-svgrepo-com.svg" alt="Google" className="w-5 h-5" /> <span>Continue with Google</span> </button>
+
           </form>
 
           {/* Register link */}
