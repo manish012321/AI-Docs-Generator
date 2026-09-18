@@ -11,8 +11,8 @@ export const contactRoute = async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: "Contact Form <onboarding@resend.dev>", // free default sender
-      to: "yourgmail@gmail.com",
+      from: "Contact Form of ai_docs_generator <onboarding@resend.dev>", 
+      to: "manishsuriyal21@gmail.com",
       replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: `

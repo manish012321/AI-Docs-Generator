@@ -11,13 +11,7 @@ const userSchema = new mongoose.Schema
         required : true,
         unique : true
     },
-    password : {
-        type : String,
-        requires : function(){
-            return this.authProvider === "Local"
-        }
-    },
-    workspaceId : {
+  workspaceId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "Workspace"
     },
@@ -28,8 +22,8 @@ const userSchema = new mongoose.Schema
     },
     authProvider : {
         type : String,
-        enum : ["Local","Google"],
-        default : "Local"
+        enum : ["OTP","Google"],
+        default : "OTP"
     },
     avatar : {
         type : String,
