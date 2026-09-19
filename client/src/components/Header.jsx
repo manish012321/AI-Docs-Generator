@@ -1,26 +1,27 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, Menu, Moon, Sun, X } from "lucide-react";
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore.js';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
- const [theme, setTheme] = useState(
+  const [theme, setTheme] = useState(
     localStorage.getItem('theme') || 'light'
-);
+  );
 
-useEffect(() => {
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-}, [theme]);
+  }, [theme]);
 
-const toggleTheme = () => {
+  const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
-};
-
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -29,123 +30,167 @@ const toggleTheme = () => {
     { name: "Contact", href: "/contact" },
     { name: "Docs", href: "/sops" },
     { name: "How it Works", href: "/how-it-works" },
-
   ];
 
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useAuthStore();
 
+  
+  const openLogoutModal = () => {
+    setShowLogoutModal(true);
+    setConfirmLogout(false);
+  };
+
+  const closeLogoutModal = () => {
+    setShowLogoutModal(false);
+    setConfirmLogout(false);
+  };
+
   const handleLogout = () => {
     logout();
+    setShowLogoutModal(false);
+    setConfirmLogout(false);
     navigate('/login');
   };
 
-
-
-
   return (
+    <>
+      <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-gray-900 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-    <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-gray-900 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
-
-        <div className="flex items-center gap-3 cursor-pointer">
-          <div className="bg-purple-600 text-white p-2 rounded-2xl shadow-md">
-            <FileText size={22} />
+          <div className="flex items-center gap-3 cursor-pointer">
+            <div className="bg-purple-600 text-white p-2 rounded-2xl shadow-md">
+              <FileText size={22} />
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-gray-800 dark:text-white">
+              AI Docs <span className="text-purple-600">Generator</span>
+            </h1>
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-tight text-gray-800 dark:text-white">
-            AI Docs <span className="text-purple-600">Generator</span>
-          </h1>
-        </div>
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.name}
+                to={link.href}
+                className={({ isActive }) =>
+                  `relative font-medium transition duration-300
+                   after:absolute after:left-0 after:-bottom-1
+                   after:h-0.5 after:bg-purple-600 after:transition-all
+                   hover:text-purple-600 hover:after:w-full
+                   dark:hover:text-purple-400
+                   ${isActive
+                     ? "text-purple-600 dark:text-purple-400 after:w-full"
+                     : "text-gray-700 dark:text-gray-300 after:w-0"
+                   }`
+                }
+              >
+                {link.name}
+              </NavLink>
+            ))}
+          </nav>
 
-
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.name}
-              to={link.href}
-               className={({ isActive }) =>
-    `relative font-medium transition duration-300
-     after:absolute after:left-0 after:-bottom-1
-     after:h-0.5 after:bg-purple-600 after:transition-all
-     hover:text-purple-600 hover:after:w-full
-     dark:hover:text-purple-400
-     ${isActive
-       ? "text-purple-600 dark:text-purple-400 after:w-full"
-       : "text-gray-700 dark:text-gray-300 after:w-0"
-     }`
-  }
+          {/* Logout / Login button */}
+          {isAuthenticated ? (
+            <button
+              onClick={openLogoutModal}
+              className="hover:bg-red-400 bg-red-100 dark:bg-red-900 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black px-6 py-2.5 rounded-2xl font-semibold shadow-md"
             >
-              {link.name}
-            </NavLink>
-          ))}
-        </nav>
-
-       
-        {/* Logout button */}
-
-        {
-          isAuthenticated ? (
-            <button onClick={handleLogout} className=" hover:bg-red-400 bg-red-100 dark:bg-red-900 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black px-6 py-2.5 rounded-2xl font-semibold shadow-md" >
               Logout
             </button>
           ) : (
             <button
               onClick={() => navigate('/login')}
-              className=" hover:bg-purple-100 dark:hover:bg-purple-900 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black px-6 py-2.5 rounded-2xl font-semibold shadow-md"
+              className="hover:bg-purple-100 dark:hover:bg-purple-900 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black px-6 py-2.5 rounded-2xl font-semibold shadow-md"
             >
               Login
             </button>
-          )
-        }
+          )}
 
-       <button onClick={toggleTheme}className="hover:bg-purple-100 dark:hover:bg-gray-700 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black p-3 rounded-lg">
-         
-         {theme === 'dark' ? <Sun/> : <Moon/>}
-        
-       </button>
+          <button
+            onClick={toggleTheme}
+            className="hover:bg-purple-100 dark:hover:bg-gray-700 dark:text-white hover:scale-105 active:scale-95 transition-all duration-300 text-black p-3 rounded-lg"
+          >
+            {theme === 'dark' ? <Sun /> : <Moon />}
+          </button>
 
+          <div className="hidden md:block">
+            <button className="bg-purple-600 hover:bg-purple-700 hover:scale-105 active:scale-95 transition-all duration-300 text-white px-6 py-2.5 rounded-2xl font-semibold shadow-md">
+              Generate DOC
+            </button>
+          </div>
 
-
-
-        <div className="hidden md:block">
-
-          <button className="bg-purple-600 hover:bg-purple-700 hover:scale-105 active:scale-95 transition-all duration-300 text-white px-6 py-2.5 rounded-2xl font-semibold shadow-md">
-            Generate DOC
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden text-gray-700 transition dark:text-gray-300"
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
 
+        {isOpen && (
+          <div className="md:hidden px-6 pb-5 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shadow-sm">
+            <nav className="flex flex-col gap-4 mt-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 font-medium transition"
+                >
+                  {link.name}
+                </Link>
+              ))}
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-gray-700 transition dark:text-gray-300"
+              <button className="mt-3 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-semibold transition">
+                Generate DOC
+              </button>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* ===== Logout Confirmation Modal ===== */}
+      {showLogoutModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={closeLogoutModal}
         >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </div>
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+              Confirm Logout
+            </h3>
 
+            <label className="flex items-center gap-3 my-5 cursor-pointer text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={confirmLogout}
+                onChange={(e) => setConfirmLogout(e.target.checked)}
+                className="w-5 h-5 accent-purple-600 cursor-pointer"
+              />
+              Are you sure you want to logout?
+            </label>
 
-      {isOpen && (
-        <div className="md:hidden px-6 pb-5 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shadow-sm">
-          <nav className="flex flex-col gap-4 mt-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-purple-600 font-medium transition"
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeLogoutModal}
+                className="px-5 py-2.5 rounded-2xl font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
-                {link.name}
-              </Link>
-            ))}
-
-            <button className="mt-3 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-2xl font-semibold transition">
-              Generate DOC
-            </button>
-          </nav>
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                disabled={!confirmLogout}
+                className="px-5 py-2.5 rounded-2xl font-semibold bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
 

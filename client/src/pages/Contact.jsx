@@ -54,7 +54,7 @@ const Contact = () => {
             </h2>
 
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Have questions about SOP Generator? We'd love to hear from you.
+              Have questions about AI-DOcs Generator? We'd love to hear from you.
               Send us a message and we'll respond as soon as possible.
             </p>
           </div>

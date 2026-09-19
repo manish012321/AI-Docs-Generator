@@ -1,284 +1,559 @@
-import { useEffect } from "react";
 import { useState } from "react";
-import Header from "../components/Header";
-import api from '../api/axios.js';
-import { useLocation, useNavigate } from 'react-router-dom';
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import { motion } from "framer-motion";
 import {
-  CirclePlay, Clock, Download, FileCheck,
-  Mic,
-  MicOff,
-  ShieldCheck, Sparkles, User, WandSparkles, Zap,
+  FileText,
+  Sparkles,
+  Download,
+  Search,
+  Clock,
+  FileUser,
+  ClipboardList,
+  NotebookPen,
+  BarChart3,
+  GraduationCap,
+  BookOpen,
+  Presentation,
+  FolderKanban,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import api from "../api/axios.js";
+import Header from "../components/Header.jsx";
 
 const Dashboard = () => {
-  const [rawText, setRawText] = useState('');
-  const [sop, setSop] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const [rawText, setRawText] = useState("");
+  const [sop, setSop] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition();
+  const documentTypes = [
+    {
+      title: "Resume / CV",
+      description: "Create a professional resume",
+      icon: FileUser,
+      example:
+        "Create a professional resume for a frontend developer with React, JavaScript and Node.js experience.",
+    },
+    {
+      title: "SOP",
+      description: "Create a structured SOP",
+      icon: ClipboardList,
+      example:
+        "Create an SOP for onboarding a new employee in a software company.",
+    },
+    {
+      title: "Notes",
+      description: "Turn information into clear notes",
+      icon: NotebookPen,
+      example:
+        "Create concise notes about JavaScript promises, async/await and error handling.",
+    },
+    {
+      title: "Reports",
+      description: "Generate professional reports",
+      icon: BarChart3,
+      example:
+        "Create a project progress report covering completed work, challenges and next steps.",
+    },
+    {
+      title: "Study Material",
+      description: "Create learning material",
+      icon: GraduationCap,
+      example:
+        "Create detailed study material for operating systems including processes, threads and memory management.",
+    },
+    {
+      title: "Articles",
+      description: "Write structured articles",
+      icon: BookOpen,
+      example:
+        "Write an informative article explaining how artificial intelligence is changing web development.",
+    },
+    {
+      title: "Meeting Notes",
+      description: "Organize meeting information",
+      icon: Presentation,
+      example:
+        "Create organized meeting notes with discussion points, decisions and action items.",
+    },
+    {
+      title: "Project Documentation",
+      description: "Document your projects",
+      icon: FolderKanban,
+      example:
+        "Create documentation for a MERN stack food delivery application including features and architecture.",
+    },
+  ];
 
-  // Keep the textarea in sync with the live transcript while recording
-  useEffect(() => {
-    if (listening) {
-      setRawText(transcript);
-    }
-  }, [transcript, listening]);
-
-  const handleStartRecording = () => {
-    resetTranscript();
-    SpeechRecognition.startListening({ continuous: true });
-  };
-
-  const handleStopRecording = () => {
-    SpeechRecognition.stopListening();
-  };
-
+  
   const handleGenerate = async () => {
+    if (!rawText.trim()) {
+      setError("Please describe what you want to create.");
+      return;
+    }
+
     setLoading(true);
-    setError('');
+    setError("");
+
     try {
-      const res = await api.post('/sops', { rawText });
-      setSop(res.data.sop);
+      
+      const res = await api.post("/sops", { rawText });
+
+      setSop(res.data);
+
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      console.error(err);
+      setError(
+        err?.response?.data?.message ||
+          "Something went wrong while generating your document."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDocumentType = (example) => {
+    setRawText(example);
+    setError("");
+
+    setTimeout(() => {
+      document
+        .getElementById("document-input")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+    }, 100);
+  };
+
   const handleDownload = async () => {
+    if (!sop?._id) return;
+
     try {
-      const response = await api.get(`/sops/${sop._id}/export/pdf`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+        const response = await api.get(
+        `/sops/${sop._id}/export/pdf`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(
+        new Blob([response.data])
+      );
+
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `${sop.title}.pdf`);
+      link.setAttribute(
+        "download",
+        `${sop.title || "document"}.pdf`
+      );
+
       document.body.appendChild(link);
       link.click();
+
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
+      setError("Unable to download the document.");
     }
   };
 
-
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.state?.prefill) {
-      setRawText(location.state.prefill);
-    }
-  }, [location.state]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+
+      
       <Header />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-16 py-10 flex flex-col lg:flex-row items-center justify-between gap-12">
 
-        {/* LEFT SECTION */}
-        <div className="w-full lg:w-1/2">
+      
+      <main className="max-w-7xl mx-auto px-6 py-10">
 
-          <p className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-semibold px-4 py-2 rounded-full shadow-sm">
+        {/* HERO */}
+        <section className="text-center max-w-3xl mx-auto">
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-5">
             <Sparkles size={16} />
-            AI-Powered SOP Generator
-          </p>
-
-          <h1 className="text-5xl lg:text-6xl font-extrabold leading-tight mt-6">
-            <span className="text-gray-900 dark:text-white">Create Professional SOPs</span>
-            <span className="text-purple-700 dark:text-purple-400"> in Minutes,</span>
-            <br />
-            <span className="text-gray-900 dark:text-white">Not Hours.</span>
-          </h1>
-
-          <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 leading-8 max-w-xl">
-            Generate personalized, professional Standard Operating Procedures
-            that help your team work consistently and efficiently.
-          </p>
-
-          <div className="flex flex-wrap gap-4 mt-8">
-            <button className="flex items-center bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold px-6 py-4 rounded-xl shadow-md hover:scale-105 transition-all duration-300">
-              <WandSparkles size={20} className="mr-2" />
-              Generate SOP
-            </button>
-
-            <button onClick={()=> navigate('/how-it-works')}  className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-purple-300 text-gray-800 dark:text-gray-200 font-semibold px-6 py-4 rounded-xl shadow-sm hover:scale-105 transition-all duration-300">
-              <CirclePlay size={22} className="mr-2 text-purple-700 dark:text-purple-400" />
-              How it Works
-            </button>
+            AI-Powered Document Creation
           </div>
 
-          <ul className="flex flex-wrap gap-4 mt-10">
-            <li className="flex items-center bg-white dark:bg-gray-800 px-4 py-3 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
-              <Zap size={18} className="text-purple-700 dark:text-purple-400 mr-2" />AI-Powered
-            </li>
-            <li className="flex items-center bg-white dark:bg-gray-800 px-4 py-3 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
-              <ShieldCheck size={18} className="text-purple-700 dark:text-purple-400 mr-2" />100% Original
-            </li>
-            <li className="flex items-center bg-white dark:bg-gray-800 px-4 py-3 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
-              <Clock size={18} className="text-purple-700 dark:text-purple-400 mr-2" />Time Saving
-            </li>
-            <li className="flex items-center bg-white dark:bg-gray-800 px-4 py-3 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
-              <FileCheck size={18} className="text-purple-700 dark:text-purple-400 mr-2" />ATS-Friendly
-            </li>
-          </ul>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
+            Create Any Document
+            <span className="text-purple-600">
+              {" "}With AI
+            </span>
+          </h2>
 
-          <div className="flex flex-wrap gap-8 mt-12">
-            <div className="pr-8 border-r border-gray-300 dark:border-gray-600">
-              <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400">10K+</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">SOPs Generated</p>
-            </div>
-            <div className="pr-8 border-r border-gray-300 dark:border-gray-600">
-              <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400">98%</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">User Satisfaction</p>
-            </div>
-            <div className="pr-8 border-r border-gray-300 dark:border-gray-600">
-              <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400">95%</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Success Rate</p>
-            </div>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Create resumes, SOPs, notes, reports, study material,
+            articles and more — simply describe what you need.
+          </p>
+
+        </section>
+
+
+        
+        <section className="mt-12">
+
+          <div className="flex items-center justify-between mb-5">
+
             <div>
-              <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400">24/7</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">AI Support</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                What do you want to create?
+              </h3>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Choose a document type or describe your own
+              </p>
             </div>
+
           </div>
-        </div>
 
-        {/* RIGHT SECTION */}
-        <div className="w-full lg:w-1/2 flex flex-col items-center mt-10 gap-4">
-          <div className="w-full bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 flex flex-col sm:flex-row gap-6">
 
-            {/* Form Column */}
-            <div className="flex-1">
-              <div className="flex items-start gap-3 mb-5">
-                <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
-                  <User size={16} className="text-purple-700 dark:text-purple-300" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-white text-sm">Describe your process</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">Paste or type your process. AI will structure it into a professional SOP.</p>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            {documentTypes.map((document) => {
+
+              const Icon = document.icon;
+
+              return (
+                <motion.button
+                  key={document.title}
+                  whileHover={{
+                    y: -4,
+                    scale: 1.01,
+                  }}
+                  whileTap={{
+                    scale: 0.98,
+                  }}
+                  onClick={() =>
+                    handleDocumentType(document.example)
+                  }
+                  className="text-left p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-lg transition-all"
+                >
+
+                  <div className="w-11 h-11 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+
+                    <Icon
+                      size={22}
+                      className="text-purple-600 dark:text-purple-400"
+                    />
+
+                  </div>
+
+                  <h4 className="font-bold text-gray-900 dark:text-white">
+                    {document.title}
+                  </h4>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {document.description}
+                  </p>
+
+                </motion.button>
+              );
+            })}
+
+          </div>
+
+        </section>
+
+
+        
+        <section
+          id="document-input"
+          className="mt-10 grid lg:grid-cols-2 gap-8"
+        >
+
+          {/* INPUT CARD */}
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+
+            <div className="flex items-center gap-3 mb-5">
+
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <Sparkles
+                  size={20}
+                  className="text-purple-600"
+                />
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">Your Process</label>
-                  <textarea
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    placeholder="e.g., First greet the customer, then ask for their order, then process payment..."
-                    maxLength={500}
-                    rows={6}
-                    className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-400 focus:bg-white dark:focus:bg-gray-600 resize-none"
-                  />
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-right mt-1">{rawText.length}/500</p>
-                </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                  Describe Your Document
+                </h3>
+
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Tell AI what you want to create
+                </p>
               </div>
 
-              {browserSupportsSpeechRecognition && (
-                <div className="flex justify-end gap-2 mt-1">
-                  <button
-                    onClick={handleStartRecording}
-                    disabled={listening}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${listening
-                        ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 animate-pulse'
-                        : 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 hover:bg-purple-200'
-                      }`}
-                  >
-                    <Mic size={14} />
-                  </button>
-                  <button
-                    onClick={handleStopRecording}
-                    disabled={!listening}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 hover:bg-purple-200 disabled:opacity-50"
-                  >
-                    <MicOff size={14} />
-                  </button>
-                </div>
+            </div>
+
+
+            <textarea
+              value={rawText}
+              onChange={(e) => {
+                setRawText(e.target.value);
+                setError("");
+              }}
+              rows={14}
+              placeholder="Example: Create a professional resume for a full-stack developer with React, Node.js, MongoDB and 2 years of experience..."
+              className="w-full resize-none rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white p-4 outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+            />
+
+
+            {error && (
+              <p className="mt-3 text-sm text-red-500">
+                {error}
+              </p>
+            )}
+
+
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-all"
+            >
+
+              {loading ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={19} />
+                  Generate Document
+                </>
               )}
 
-              <button
-                onClick={handleGenerate}
-                disabled={loading || !rawText}
-                className="w-full mt-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-all"
-              >
-                <WandSparkles size={16} />
-                {loading ? "Generating..." : "Generate SOP"}
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block w-px bg-gray-100 dark:bg-gray-700 self-stretch" />
-
-            {/* Preview Column */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
-                  <FileCheck size={16} className="text-purple-700 dark:text-purple-300" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-white text-sm">Your SOP Preview</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">AI-generated preview will appear here.</p>
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-2 overflow-y-auto max-h-64">
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-
-                {!sop && !error && (
-                  <div className="space-y-2">
-                    <div className="h-3 w-3/5 bg-purple-100 dark:bg-purple-900 rounded-full" />
-                    {[100, 90, 95, 80, 100, 88, 93, 75, 85, 60].map((w, i) => (
-                      <div key={i} className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
-                )}
-
-                {sop && (
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-purple-700 dark:text-purple-400 text-sm">{sop.title}</h3>
-                    {sop.structuredSteps.map((step) => (
-                      <div key={step._id} className="bg-purple-50 dark:bg-gray-700 rounded-lg p-3">
-                        <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                          Step {step.step}: {step.description}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Role: {step.role}</p>
-                        {step.warning && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠️ {step.warning}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={handleDownload}
-                disabled={!sop}
-                className="w-full mt-4 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-500 text-gray-700 dark:text-gray-300 disabled:opacity-50 font-medium py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all"
-              >
-                <Download size={15} className="text-purple-600 dark:text-purple-400" />
-                Download SOP
-              </button>
-            </div>
+            </button>
 
           </div>
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">Trusted by students and professionals worldwide</p>
-        </div>
 
-      </div>
+
+          
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm min-h-[500px]">
+
+            <div className="flex items-center justify-between mb-5">
+
+              <div className="flex items-center gap-3">
+
+                <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <FileText
+                    size={20}
+                    className="text-green-600"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                    Document Preview
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Your AI-generated document
+                  </p>
+                </div>
+
+              </div>
+
+
+              {sop && (
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                >
+                  <Download size={17} />
+                  Download
+                </button>
+              )}
+
+            </div>
+
+
+            {!sop ? (
+              <div className="h-[400px] flex flex-col items-center justify-center text-center">
+
+                <div className="w-20 h-20 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-5">
+
+                  <FileText
+                    size={36}
+                    className="text-purple-600 dark:text-purple-400"
+                  />
+
+                </div>
+
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Your document will appear here
+                </h4>
+
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mt-2">
+                  Choose a document type above or describe
+                  exactly what you want in the text box.
+                </p>
+
+              </div>
+            ) : (
+
+              <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 h-[400px] overflow-y-auto">
+
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5">
+                  {sop.title || "Generated Document"}
+                </h2>
+
+                <div className="whitespace-pre-wrap text-sm leading-7 text-gray-700 dark:text-gray-300">
+                  {sop.content ||
+                    sop.description ||
+                    sop.rawText ||
+                    "Document generated successfully."}
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+        </section>
+
+
+        
+        <section className="mt-12">
+
+          <div className="text-center mb-7">
+
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Need some inspiration?
+            </h3>
+
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Try one of these prompts
+            </p>
+
+          </div>
+
+
+          <div className="grid md:grid-cols-3 gap-4">
+
+            {[
+              {
+                icon: FileUser,
+                title: "Create a Resume",
+                text:
+                  "Create a modern ATS-friendly resume for a frontend developer skilled in React and JavaScript.",
+              },
+              {
+                icon: NotebookPen,
+                title: "Create Study Notes",
+                text:
+                  "Create easy-to-understand B.Sc. IT notes about operating systems and process management.",
+              },
+              {
+                icon: ClipboardList,
+                title: "Create an SOP",
+                text:
+                  "Create a step-by-step SOP for onboarding a new employee in a software company.",
+              },
+            ].map((item) => {
+
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.title}
+                  onClick={() => handleDocumentType(item.text)}
+                  className="text-left p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-purple-400 hover:shadow-md transition"
+                >
+
+                  <div className="flex items-center gap-3 mb-3">
+
+                    <Icon
+                      size={20}
+                      className="text-purple-600"
+                    />
+
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      {item.title}
+                    </h4>
+
+                  </div>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {item.text}
+                  </p>
+
+                </button>
+              );
+            })}
+
+          </div>
+
+        </section>
+
+
+        
+        <section className="mt-14 pb-10">
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            {[
+              {
+                icon: Sparkles,
+                title: "AI Powered",
+                text: "Generate content with AI",
+              },
+              {
+                icon: Clock,
+                title: "Save Time",
+                text: "Create documents faster",
+              },
+              {
+                icon: FileText,
+                title: "Multiple Formats",
+                text: "Create different document types",
+              },
+              {
+                icon: Search,
+                title: "Easy to Manage",
+                text: "Find your documents easily",
+              },
+            ].map((item) => {
+
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.title}
+                  className="p-5 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+                >
+
+                  <Icon
+                    size={21}
+                    className="text-purple-600 mb-3"
+                  />
+
+                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                    {item.title}
+                  </h4>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {item.text}
+                  </p>
+
+                </div>
+              );
+            })}
+
+          </div>
+
+        </section>
+
+      </main>
+
     </div>
   );
 };
 
 export default Dashboard;
+
