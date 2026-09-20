@@ -12,7 +12,7 @@
 
 ## 🌐 Live Demo
 
-**→ [https://sop-generator-iota.vercel.app](https://sop-generator-iota.vercel.app)**
+**→ [https://sop-generator-iota.vercel.app](https://www.generatordocs.me/)**
 
 ---
 
