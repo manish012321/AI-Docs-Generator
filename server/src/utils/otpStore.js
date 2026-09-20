@@ -14,12 +14,12 @@ export const verifyOTP = (email, otp) => {
     if (!record) return "NOT_FOUND";
     
     if (Date.now() > record.expiresAt) {
-        otpStore.delete(email); // clean up expired
+        otpStore.delete(email);
         return "EXPIRED";
     }
     
     if (record.otp !== otp) return "INVALID";
     
-    otpStore.delete(email); // clean up after success
+    otpStore.delete(email); 
     return "VALID";
 };

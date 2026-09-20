@@ -98,7 +98,7 @@ const SopList = () => {
       label: 'Documents'
     },
     {
-      to: '/templates',
+      to: '/',
       icon: <LayoutTemplateIcon size={20} />,
       label: 'Templates'
     },

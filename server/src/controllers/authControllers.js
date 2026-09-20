@@ -9,7 +9,7 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ─── REGISTER — send OTP 
+//REGISTER — send OTP 
 export const register = async (req, res) => {
     try {
         const { name, email } = req.body;
@@ -70,7 +70,7 @@ export const register = async (req, res) => {
     }
 };
 
-// ─── VERIFY OTP — create user 
+//  VERIFY OTP — create user 
 export const verifyOtp = async (req, res) => {
     try {
         const { name, email, otp } = req.body;
@@ -125,7 +125,7 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
-// ─── LOGIN — send OTP 
+// LOGIN — send OTP 
 export const login = async (req, res) => {
     try {
         const { email } = req.body;
@@ -172,7 +172,7 @@ export const login = async (req, res) => {
     }
 };
 
-// ─── VERIFY LOGIN OTP 
+//VERIFY LOGIN OTP 
 export const verifyLoginOtp = async (req, res) => {
     try {
         const { email, otp } = req.body;

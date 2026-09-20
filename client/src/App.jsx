@@ -9,7 +9,6 @@ import SopList from './pages/SopList';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Contact from './pages/Contact';
-import Template from './pages/Template';
 const App = () => {
 
   
@@ -32,8 +31,7 @@ const App = () => {
 
             <Route path='/how-it-works' element={<HowItWorks/>}/>
             <Route path='/contact' element={<Contact/>}/>
-            <Route path='/templates' element={<Template/>}/>
-        </Routes>
+              </Routes>
       </BrowserRouter>
     </>
   )

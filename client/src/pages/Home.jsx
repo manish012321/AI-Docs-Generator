@@ -285,7 +285,7 @@ const Home = () => {
       </section>
 
       {/* ── TEMPLATES ── */}
-      <section className="py-24 px-6 bg-white dark:bg-gray-900">
+      {/* <section className="py-24 px-6 bg-white dark:bg-gray-900">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
             Ready-Made Templates
@@ -328,7 +328,7 @@ const Home = () => {
             Browse All Templates
           </button>
         </div>
-      </section>
+      </section> */}
 
       {/* ── TESTIMONIALS ── */}
       <section className="py-24 px-6 bg-gray-50 dark:bg-gray-800">
