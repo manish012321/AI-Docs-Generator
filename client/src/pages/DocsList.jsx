@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import api from "../api/axios.js";
 import Header from "../components/Header.jsx";
-
+import toast from "react-hot-toast";
 import {
   CircleAlert,
   Clock,
@@ -27,7 +27,7 @@ const DocsList = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  // ─────────────────── FETCH ───────────────────
+
   useEffect(() => {
     const fetchDocs = async () => {
       try {
@@ -43,24 +43,27 @@ const DocsList = () => {
     fetchDocs();
   }, []);
 
-  // ─────────────────── DELETE ───────────────────
+  
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this document? This cannot be undone.")) return;
+  if (!window.confirm("Delete this document? This cannot be undone.")) return;
 
-    setDeletingId(id);
-    try {
-      await api.delete(`/generate-docs/${id}`);
-      setDocs((prev) => prev.filter((d) => d._id !== id));
-      if (selectedDoc?._id === id) setSelectedDoc(null);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete document.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  setDeletingId(id);
+  const toastId = toast.loading("Deleting...");
 
-  // ─────────────────── DOWNLOAD ───────────────────
+  try {
+    await api.delete(`/generate-docs/${id}`);
+    setDocs((prev) => prev.filter((d) => d._id !== id));
+    if (selectedDoc?._id === id) setSelectedDoc(null);
+    toast.success("Document deleted", { id: toastId });
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to delete document", { id: toastId });
+  } finally {
+    setDeletingId(null);
+  }
+};
+
+ 
   const handleDownload = async (doc) => {
     try {
       const response = await api.get(`/generate-docs/${doc._id}/pdf`, {
@@ -81,14 +84,14 @@ const DocsList = () => {
     }
   };
 
-  // ─────────────────── STATS ───────────────────
+  
   const thisWeekCount = useMemo(() => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     return docs.filter((d) => new Date(d.createdAt) > weekAgo).length;
   }, [docs]);
 
-  // ─────────────────── FILTERS ───────────────────
+  
   const DOC_TYPES = [
     "All",
     "Resume / CV",
