@@ -5,10 +5,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import SopList from './pages/SopList';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Contact from './pages/Contact';
+import DocsList from './pages/DocsList';
 const App = () => {
 
   
@@ -26,7 +26,7 @@ const App = () => {
             <Dashboard />
           </ProtectedRoute>} />
           <Route path='/sops' element={<ProtectedRoute>
-            <SopList/>
+            <DocsList/>
           </ProtectedRoute>}/>
 
             <Route path='/how-it-works' element={<HowItWorks/>}/>
