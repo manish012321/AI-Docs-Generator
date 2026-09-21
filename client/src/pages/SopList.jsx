@@ -85,7 +85,7 @@ const SopList = () => {
     sop.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Routes are intentionally unchanged.
+  
   const navItems = [
     {
       to: '/dashboard',
