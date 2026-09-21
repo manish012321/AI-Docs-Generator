@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import api from "../api/axios.js";
 import Header from "../components/Header.jsx";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify"
 import {
   CircleAlert,
   Clock,
@@ -44,20 +44,19 @@ const DocsList = () => {
   }, []);
 
   
-  const handleDelete = async (id) => {
-  if (!window.confirm("Delete this document? This cannot be undone.")) return;
-
-  setDeletingId(id);
-  const toastId = toast.loading("Deleting...");
+const handleDelete = async (id) => {
+   setDeletingId(id);
 
   try {
     await api.delete(`/generate-docs/${id}`);
     setDocs((prev) => prev.filter((d) => d._id !== id));
     if (selectedDoc?._id === id) setSelectedDoc(null);
-    toast.success("Document deleted", { id: toastId });
+    toast.success("Document deleted");
   } catch (err) {
     console.error(err);
-    toast.error("Failed to delete document", { id: toastId });
+    toast.error(
+      err?.response?.data?.message || err.message || "Delete failed"
+    );
   } finally {
     setDeletingId(null);
   }
